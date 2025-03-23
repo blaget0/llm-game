@@ -1,6 +1,6 @@
 from openai import OpenAI
 import chromadb
-from chroma import get_spell, get_healing_spell
+from llm_code.chroma import get_spell, get_healing_spell
 import re
 import os
 from math import ceil
