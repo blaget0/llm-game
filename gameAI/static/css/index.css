@@ -1,0 +1,38 @@
+.user_team {
+    position: fixed;
+    bottom: 3%;
+    left: 3%;
+    width: 40%;
+    background-color: transparent;
+}
+
+.unit_stats {
+    position: relative;
+}
+
+
+.enemy_team {
+    position: fixed;
+    top: 3%;
+    right: 3%;
+    width: 40%;
+    background-color: transparent;
+}
+
+.unit {
+    display: inline-block;
+    border: 1px solid #ccc;
+}
+
+
+.restart_screen {
+    position: fixed;
+    top: 30%;
+    width: 50%;
+    height: 40%;
+    left: 25%;
+    border-radius: 12px;
+    background-color: #FFF;
+    border: #000;
+
+}

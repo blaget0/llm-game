@@ -1,0 +1,204 @@
+
+{%load static%}
+{% load custom_filter %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/css/index.css">
+    <title>FIGHT!!!</title>
+    <meta charset="utf-8" />
+    <script src="{% static 'js/htmx.js' %}"></script>
+
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <script>
+                function updateEndGameComponent(isGameEnd) {
+            const endGameComponent = document.getElementById('end-game-component');
+
+            if (isGameEnd) {
+                endGameComponent.style.display = 'block'; // Показываем компонент
+            } else {
+                endGameComponent.style.display = 'none'; // Скрываем компонент
+            }
+        }
+        // Добавляем CSRF-токен в заголовки HTMX-запросов
+        if (document.body) {
+            document.body.addEventListener('htmx:configRequest', (event) => {
+                event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
+            });
+        }
+
+        // Флаг для отслеживания первого запроса
+
+        // Функция для обновления интерфейса на основе JSON-ответа
+        function updateGameUI(response) {
+            const gameContainer = document.getElementById('game');
+            const resultContainer = document.getElementById('result');
+
+            if (response.status === 'success') {
+                // Обновляем сообщение в блоке результата
+                resultContainer.innerHTML = `<p>${response.message}</p>`;
+
+                // Парсим lobby, если это строка
+                const lobby = typeof response.lobby === 'string' ? JSON.parse(response.lobby) : response.lobby;
+
+                // Обновляем текущего игрока
+                const currentPlayer = lobby.players[lobby.game_state.current_turn];
+                const gameIsEnd = response.game_is_end
+
+                updateEndGameComponent(gameIsEnd)
+
+                gameContainer.querySelector('div:first-child').innerText = `Сейчас ходит: ${currentPlayer.name}`;
+
+                // Определяем turnStage
+               
+                turnStage = lobby.game_state.turn_stage; 
+
+                console.log(turnStage)
+
+                // Обновляем этап хода
+                gameContainer.querySelector('.enemy_team div:first-child').innerText = `ИГРОК: ${lobby.players[1].name} (Этап хода: ${turnStage})`;
+
+                // Обновляем команду игрока
+                const userTeamContainer = gameContainer.querySelector('.user_team');
+                const enemyTeamContainer = gameContainer.querySelector('.enemy_team');
+                if (turnStage == "SELECT-UNIT"){
+                userTeamContainer.innerHTML = `
+                    <div>ИГРОК: ${lobby.players[0].name}</div>
+                    ${lobby.players[0].team.map(unit => `
+                        <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"unit_name": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                            <img src="/static/${unit.image}" alt="${unit.name}">
+                            <p>${unit.name}</p>
+                            <p>HP: ${unit.hp}</p>
+                        </div>
+                    `).join('')}
+                `;
+            
+                enemyTeamContainer.innerHTML = `
+                    <div>ИГРОК: ${lobby.players[1].name} (Этап хода: ${turnStage})</div>
+                    ${lobby.players[1].team.map(unit => `
+                        <div class="unit">
+
+                            <img src="/static/${unit.image}" alt="${unit.name}">
+                            <p>${unit.name}</p>
+                            <p>HP: ${unit.hp}</p>
+                        </div>
+                    `).join('')}
+                `;}
+
+                else {
+                    userTeamContainer.innerHTML = `
+                    <div>ИГРОК: ${lobby.players[0].name}</div>
+                    ${lobby.players[0].team.map(unit => `
+                        <div class="unit">
+                            <img src="/static/${unit.image}" alt="${unit.name}">
+                            <p>${unit.name}</p>
+                            <p>HP: ${unit.hp}</p>
+                        </div>
+                    `).join('')}
+                `;
+                    enemyTeamContainer.innerHTML = `
+                    <div>ИГРОК: ${lobby.players[1].name} (Этап хода: ${turnStage})</div>
+                    ${lobby.players[1].team.map(unit => `
+                        <div class="unit"  hx-headers='{"Cache-Control": "no-cache"}' 
+                                           hx-post="/" 
+                                           hx-vals='{"target": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+
+                            <img src="/static/${unit.image}" alt="${unit.name}">
+                            <p>${unit.name}</p>
+                            <p>HP: ${unit.hp}</p>
+                        </div>
+                    `).join('')}
+                `;}
+                htmx.process(enemyTeamContainer);
+                htmx.process(userTeamContainer)
+                
+
+                // Обновляем команду противника
+                
+
+                // Добавляем HTMX-атрибуты, если этап хода — "ACTION"
+                
+            } else {
+                resultContainer.innerText = 'Ошибка: ' + response.message;
+            }
+        }
+
+        // Обработка JSON-ответа от сервера
+        document.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.successful) {
+                try {
+                    const response = JSON.parse(evt.detail.xhr.responseText);
+                    updateGameUI(response); // Обновляем интерфейс
+                } catch (e) {
+                    console.error('Ошибка при обработке ответа:', e);
+                }
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <div id="game">
+        <!-- Блок для отображения текущего состояния игры -->
+        <div>Сейчас ходит: {{ lobby.players|get_by_index:lobby.game_state.current_turn|get_name }}</div>
+        <div id="result"></div>
+
+
+
+        <div class="restart_screen" id='end-game-component'>
+            Вы победили
+            <form method="post">
+                {% csrf_token %}
+                <button name="restart", value="restart"> Начать заново</button>
+            </form>
+                
+        </div>
+
+
+        <!-- Команда игрока -->
+        <div class="user_team">
+            <div>ИГРОК: {{ lobby.players.0.name }} {{lobby.game_state.turn_stage}}</div>
+            {% for unit in lobby.players.0.team %}
+                    {% if lobby.game_state.turn_stage == 'SELECT-UNIT' %}
+                <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"unit_name": "{{ unit.name }}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                    <img src="{% static unit.image %}" alt="{{ unit.name }}">
+                    <p>{{ unit.name }}</p>
+                    <p> HP: {{unit.hp}}</p>
+                </div>
+                    {% else%}
+                    <div class="unit">
+                        <img src="{% static unit.image %}" alt="{{ unit.name }}">
+                    <p>{{ unit.name }}</p>
+                    <p> HP: {{unit.hp}}</p>
+                </div>
+
+                    {% endif %}
+
+                 
+            {% endfor %}
+        </div>
+
+        <!-- Команда противника -->
+        <div class="enemy_team">
+            <div>ИГРОК: {{ lobby.players.1.name }} (Этап хода: {{ lobby.game_state.turn_stage }})</div>
+            {% for unit in lobby.players.1.team %}
+            {% if lobby.game_state.turn_stage == 'ACTION' %}
+                                <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"target": "{{ unit.name }}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                                    <img src="{% static unit.image %}" alt="{{ unit.name }}">
+                                    <p>{{ unit.name }}</p>
+                                    <p> HP: {{unit.hp}}</p>
+                                </div>
+                                    
+            {% else %}
+            <div class="unit">
+                <img src="{% static unit.image %}" alt="{{ unit.name }}">
+            <p>{{ unit.name }}</p>
+            <p> HP: {{unit.hp}}</p>
+        </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
