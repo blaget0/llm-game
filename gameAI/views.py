@@ -81,8 +81,8 @@ def index(request):
 
             })
 
-
-    del request.session['CUR_LOBBY']
+    if 'CUR_LOBBY' in request.session:
+        del request.session['CUR_LOBBY']
     if 'CUR_LOBBY' not in request.session or 'restart' in request.POST:
         player1 = Player('Vitya', request.session.session_key, 
                          [
