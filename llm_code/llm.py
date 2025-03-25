@@ -1,8 +1,7 @@
 from openai import OpenAI
-if __name__ != '__main__':
-    from LLMGame.chroma import get_spell, get_healing_spell
-else:
-    from chroma import get_spell, get_healing_spell
+
+import chromadb
+from llm_code.chroma import get_spell, get_healing_spell
 import re
 import os
 from math import ceil

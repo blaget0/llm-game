@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from .game_models import GameState, Player, Lobby, Unit
 from .bots import SimpleBot
 from random import randrange
-from LLMGame import llm
+from llm_code import llm
 
 
 def index(request):
