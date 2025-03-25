@@ -44,8 +44,8 @@ class Lobby(SerializeableClass):
         if restore:
             self.players = []
             data = json.loads(serialized_data)
-
             for player in data['players']:
+                print(player['team'])
                 self.players.append(Player(name=player['name'], session_id=player['session_id'], 
                                            team=[Unit(**unit) for unit in player['team']], is_bot=player['is_bot']))
 
@@ -73,8 +73,9 @@ class Lobby(SerializeableClass):
 
 
 class Unit(SerializeableClass):
-    def __init__(self, name, hp, attack, id,image='images/DEFAULT.png', abilities=[]):
+    def __init__(self, name, desc ,hp, attack, id,image='images/DEFAULT.png', abilities=[]):
         self.name = name 
+        self.desc = desc
         self.hp = hp 
         self.attack = attack  
         self.abilities = abilities

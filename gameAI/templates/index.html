@@ -34,10 +34,15 @@
         function updateGameUI(response) {
             const gameContainer = document.getElementById('game');
             const resultContainer = document.getElementById('result');
+            const promtContainer = document.getElementById('prompt');
 
             if (response.status === 'success') {
                 // Обновляем сообщение в блоке результата
                 resultContainer.innerHTML = `<p>${response.message}</p>`;
+                if  (!isNaN(response.promt)) {
+                    resultContainer.innerHTML = `<p>${response.promt}</p>`;
+                };
+                
 
                 // Парсим lobby, если это строка
                 const lobby = typeof response.lobby === 'string' ? JSON.parse(response.lobby) : response.lobby;
@@ -64,7 +69,9 @@
                 const enemyTeamContainer = gameContainer.querySelector('.enemy_team');
                 if (turnStage == "SELECT-UNIT"){
                 userTeamContainer.innerHTML = `
+                  
                     <div>ИГРОК: ${lobby.players[0].name}</div>
+                    
                     ${lobby.players[0].team.map(unit => `
                         <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"unit_name": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
                             <img src="/static/${unit.image}" alt="${unit.name}">
@@ -84,45 +91,33 @@
                             <p>HP: ${unit.hp}</p>
                         </div>
                     `).join('')}
-                `;}
+                `;
+                htmx.process(userTeamContainer);}
 
                 else {
                     userTeamContainer.innerHTML = `
+                    <form hx-post="/"  id="promt-form"> 
+                        {% csrf_token %}
+                        <textarea name="promt"></textarea>
+                        <button type="submit"> Отправить </button>
+                    </form>
+
                     <div>ИГРОК: ${lobby.players[0].name}</div>
                     ${lobby.players[0].team.map(unit => `
-                        <div class="unit">
+                        <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"unit_name": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
                             <img src="/static/${unit.image}" alt="${unit.name}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
                         </div>
                     `).join('')}
                 `;
-                    enemyTeamContainer.innerHTML = `
-                    <div>ИГРОК: ${lobby.players[1].name} (Этап хода: ${turnStage})</div>
-                    ${lobby.players[1].team.map(unit => `
-                        <div class="unit"  hx-headers='{"Cache-Control": "no-cache"}' 
-                                           hx-post="/" 
-                                           hx-vals='{"target": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
 
-                            <img src="/static/${unit.image}" alt="${unit.name}">
-                            <p>${unit.name}</p>
-                            <p>HP: ${unit.hp}</p>
-                        </div>
-                    `).join('')}
-                `;}
-                htmx.process(enemyTeamContainer);
-                htmx.process(userTeamContainer)
+                htmx.process(userTeamContainer);
+                   }
+                }
                 
-
-                // Обновляем команду противника
-                
-
-                // Добавляем HTMX-атрибуты, если этап хода — "ACTION"
-                
-            } else {
-                resultContainer.innerText = 'Ошибка: ' + response.message;
-            }
-        }
+        
+            } 
 
         // Обработка JSON-ответа от сервера
         document.addEventListener('htmx:afterRequest', function(evt) {
@@ -134,7 +129,13 @@
                     console.error('Ошибка при обработке ответа:', e);
                 }
             }
-        });
+        }
+    
+    );
+
+
+
+
     </script>
 </head>
 
@@ -143,6 +144,7 @@
         <!-- Блок для отображения текущего состояния игры -->
         <div>Сейчас ходит: {{ lobby.players|get_by_index:lobby.game_state.current_turn|get_name }}</div>
         <div id="result"></div>
+        <div id="prompt"> </div>
 
 
 
@@ -150,7 +152,7 @@
             Вы победили
             <form method="post">
                 {% csrf_token %}
-                <button name="restart", value="restart"> Начать заново</button>
+                <button name="restart", value="restart" "> Начать заново</button>
             </form>
                 
         </div>
@@ -158,6 +160,11 @@
 
         <!-- Команда игрока -->
         <div class="user_team">
+            <form hx-post='/' id="promt-form"> 
+                {% csrf_token %}
+                <textarea name="promt"></textarea>
+                <button type="submit"> Отправить </button>
+            </form>
             <div>ИГРОК: {{ lobby.players.0.name }} {{lobby.game_state.turn_stage}}</div>
             {% for unit in lobby.players.0.team %}
                     {% if lobby.game_state.turn_stage == 'SELECT-UNIT' %}
@@ -165,8 +172,10 @@
                     <img src="{% static unit.image %}" alt="{{ unit.name }}">
                     <p>{{ unit.name }}</p>
                     <p> HP: {{unit.hp}}</p>
+                    
                 </div>
                     {% else%}
+                    
                     <div class="unit">
                         <img src="{% static unit.image %}" alt="{{ unit.name }}">
                     <p>{{ unit.name }}</p>
@@ -184,6 +193,7 @@
             <div>ИГРОК: {{ lobby.players.1.name }} (Этап хода: {{ lobby.game_state.turn_stage }})</div>
             {% for unit in lobby.players.1.team %}
             {% if lobby.game_state.turn_stage == 'ACTION' %}
+                                
                                 <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"target": "{{ unit.name }}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
                                     <img src="{% static unit.image %}" alt="{{ unit.name }}">
                                     <p>{{ unit.name }}</p>

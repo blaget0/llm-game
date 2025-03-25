@@ -85,8 +85,6 @@ def get_healing_spell(input_text, k_spells):
 
 chroma_client = chromadb.PersistentClient(path="database/")
 
-
-
 '''
 collection = chroma_client.get_or_create_collection("healing_spells_collection")
 
@@ -97,19 +95,18 @@ collection.add(
     ids=["id1", "id2"]
 )
 
+battle_collection = chroma_client.get_or_create_collection("spells_collection")
 
-collection.add(
+battle_collection.add(
     documents=["The fire ball spell casts a circular ball of fire that explodes on contact", 
                "The freezing rain spell casts a rain of ice that rains down and freezes anything beneath it"],
     metadatas=[{"name":"fireball", "fire_damage": "10", "frost_damage": "0"}, {"name":"freezing_rain", "fire_damage": "0", "frost_damage": "10"}],
     ids=["id1", "id2"]
 )
 
-results = collection.query(
+results = battle_collection.query(
     query_texts=["Rain ice on the enemies!"],
     n_results=2
 )
 
-print(results)
-
-'''
+print(results)'''

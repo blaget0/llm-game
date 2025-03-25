@@ -1,33 +1,48 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .game_models import GameState, Player, Lobby, Unit
 from .bots import SimpleBot
 from random import randrange
-from ..LLMGame.llm import get_target
+from LLMGame import llm
 
 
 def index(request):
     
     if request.method == 'POST':
-        print('!!!!', request.POST)
 
+        print('****************POST_INFO*********\n',request.POST)
 
-        if 'target' in request.POST:
-            target = request.POST.get('target')
-            cur_lobby = Lobby(restore=True, serialized_data=request.session['CUR_LOBBY'])
+        promt = None 
+        cur_lobby = request.session['CUR_LOBBY']
+        cur_lobby = Lobby(restore=True, serialized_data=cur_lobby)
+        if 'promt' in request.POST:
 
-            print(cur_lobby.game_state.selected_unit, target, '!@@@!:\n', cur_lobby.players)
-            cur_unit, target_unit = cur_lobby.get_unit_by_name(cur_lobby.game_state.selected_unit), cur_lobby.get_unit_by_name(target)
-            cur_unit.deal_damage(target_unit)
-            cur_lobby.game_state.next_stage()
-            
-            print(isinstance(cur_lobby.players[1], SimpleBot), cur_lobby.players[1])
+            promt = request.POST.get('promt')
+            print('PROMT:', promt)
+            target_context = {'possible_targets': []}
+            for i, unit in enumerate(cur_lobby.players[1].team):
+                target_context['possible_targets'].append({
+                                                         'id': i,
+                                                         'name': unit.name,
+                                                         'description': unit.desc
+                                                        })
+
+            _, damage_info, target = llm.cast_spell(promt, target_context)
+            target_unit = cur_lobby.get_unit_by_name(target)
+            selected_unit = cur_lobby.get_unit_by_name(cur_lobby.game_state.selected_unit)
+
+            print('LLM RESPONSE:', damage_info,type(damage_info))
+            for dam in damage_info.values():
+                target_unit.hp -= dam
+
             if cur_lobby.players[1].is_bot:
                 # This bot attack random units
                 attacked = cur_lobby.players[0].team[randrange(0, 3)]
                 target_unit.deal_damage(attacked)
+
             game_is_end = cur_lobby.delete_dead_from_field()
-                
+            
+            cur_lobby.game_state.next_stage()
 
 
             lobby_data = cur_lobby.serialize()
@@ -52,6 +67,7 @@ def index(request):
             cur_lobby.game_state.selected_unit = unit_name
 
             # Сериализуем lobby в словарь, а не в строку
+            
             lobby_data = cur_lobby.serialize()
             request.session['CUR_LOBBY'] = lobby_data
             game_is_end = cur_lobby.delete_dead_from_field()
@@ -60,22 +76,24 @@ def index(request):
                 'status': 'success',
                 'message': f'Выбран юнит: {unit_name}. Выберите цель.',
                 'lobby': lobby_data,  # Передаем как объект, а не как строку
-                 'game_is_end': game_is_end
+                'game_is_end': game_is_end,
+                'promt': promt
 
             })
 
 
+    del request.session['CUR_LOBBY']
     if 'CUR_LOBBY' not in request.session or 'restart' in request.POST:
         player1 = Player('Vitya', request.session.session_key, 
                          [
-                             Unit('knight1', 5, 1, id=1),
-                             Unit('knight2', 5, 1, id=2),
-                             Unit('knight3', 5, 1, id=3)  
+                             Unit('knight1','kinda weak knight with cool armor', 5, 1, id=1),
+                             Unit('knight2', 'looks like a barbarian than knight',5, 1, id=2),
+                             Unit('knight3','really strong knight without armor but with big sword' ,5, 1, id=3)  
                          ])
         
-        bot = SimpleBot([Unit('goblin1', 5, 1, id=4),
-                         Unit('goblin2', 5, 1, id=5),
-                         Unit('goblin3', 5, 1, id=6)])
+        bot = SimpleBot([Unit('goblin1','small goblin with pighead at his head', 5, 1, id=4),
+                         Unit('goblin2','goblin with old knife. He loose his eye a long time ago' ,5, 1, id=5),
+                         Unit('goblin3', 'It is goblin warrior. He is a way bigger than usual goblin' ,5, 1, id=6)])
         
         state = GameState(player1.session_id, bot.session_id)
         state.turn_stage = 'SELECT-UNIT'
@@ -85,5 +103,6 @@ def index(request):
     # Для GET-запросов возвращаем HTML-страницу
     
     cur_lobby = Lobby(restore=True, serialized_data=request.session['CUR_LOBBY'])
-    cur_lobby.game_state.turn_stage = 'SELECT-UNIT'
     return render(request, "index.html", {'lobby': cur_lobby})
+
+

@@ -1,6 +1,8 @@
 from openai import OpenAI
-import chromadb
-from chroma import get_spell, get_healing_spell
+if __name__ != '__main__':
+    from LLMGame.chroma import get_spell, get_healing_spell
+else:
+    from chroma import get_spell, get_healing_spell
 import re
 import os
 from math import ceil
@@ -58,14 +60,15 @@ def search_healbook(input_text, target_context):
     return prompt, heal, target
 
 
-def call_function(name, args):
+def call_function(name, args, target_context):
+    print(args)
     if name == "search_spellbook":
-        return search_spellbook(**args)
+        return search_spellbook(**args, target_context=target_context)
     if name == "search_healbook":
-        return search_healbook(**args)
+        return search_healbook(**args, target_context=target_context)
 
 
-def cast_spell(user_prompt):
+def cast_spell(user_prompt, target_context):
     system_prompt = "You are powerful wizard, who obeys the user and casts spells based on what the user tells you."
     messages = [
     {"role": "system", "content": system_prompt},
@@ -84,7 +87,7 @@ def cast_spell(user_prompt):
         args = json.loads(tool_call.function.arguments)
         messages.append(completion.choices[0].message)
 
-        result_prompt, misc_info, target = call_function(name, args)
+        result_prompt, misc_info, target = call_function(name, args, target_context)
 
         if name == 'search_spellbook':
             damage = misc_info.copy()
@@ -105,7 +108,7 @@ def cast_spell(user_prompt):
     return final_response.content, damage, target
 
 
-def cast_heal(user_prompt):
+def cast_heal(user_prompt, target_context):
     system_prompt = "You are a great healer, who obeys the user and casts healing spells based on what the user tells you."
     messages = [
     {"role": "system", "content": system_prompt},
@@ -124,7 +127,8 @@ def cast_heal(user_prompt):
         args = json.loads(tool_call.function.arguments)
         messages.append(completion.choices[0].message)
 
-        result_prompt, misc_info, target = call_function(name, args)
+
+        result_prompt, misc_info, target = call_function(name, args, target_context)
 
         if name == 'search_healbook':
             heal = misc_info.copy()
@@ -197,7 +201,7 @@ if  __name__ == '__main__':
 
     target_context['possible_targets'].append({'id':3, 'name':'Albert', 'description':'Albert is a purple slime who is part of the users team'})
 
-    print(cast_heal("Heal my slime a lot!"))
+    print(cast_spell("burn slime", target_context))
 
 
 
