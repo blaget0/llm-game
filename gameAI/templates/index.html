@@ -77,6 +77,9 @@
                             <img src="/static/${unit.image}" alt="${unit.name}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
+                            <div class="tooltip">info
+                                <span class="tooltiptext">${unit.desc}</span>
+                            </div>
                         </div>
                     `).join('')}
                 `;
@@ -89,6 +92,9 @@
                             <img src="/static/${unit.image}" alt="${unit.name}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
+                            <div class="tooltip">info
+                                <span class="tooltiptext">${unit.desc}</span>
+                            </div>
                         </div>
                     `).join('')}
                 `;
@@ -108,6 +114,9 @@
                             <img src="/static/${unit.image}" alt="${unit.name}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
+                            <div class="tooltip">info
+                                <span class="tooltiptext">${unit.desc}</span>
+                            </div>
                         </div>
                     `).join('')}
                 `;
@@ -140,6 +149,32 @@
 </head>
 
 <body>
+    <style>
+        .tooltip {
+          position: relative;
+          display: inline-block;
+          border-bottom: 1px dotted black;
+        }
+        
+        .tooltip .tooltiptext {
+          visibility: hidden;
+          width: 120px;
+          background-color: black;
+          color: #fff;
+          text-align: left;
+          border-radius: 6px;
+          padding: 5px 0;
+        
+          /* Position the tooltip */
+          position: absolute;
+          bottom: 13px;
+          z-index: 1;
+        }
+        
+        .tooltip:hover .tooltiptext {
+          visibility: visible;
+        }
+        </style>
     <div id="game">
         <!-- Блок для отображения текущего состояния игры -->
         <div>Сейчас ходит: {{ lobby.players|get_by_index:lobby.game_state.current_turn|get_name }}</div>
@@ -152,7 +187,7 @@
             Вы победили
             <form method="post">
                 {% csrf_token %}
-                <button name="restart", value="restart" "> Начать заново</button>
+                <button name="restart", value="restart"> Начать заново</button>
             </form>
                 
         </div>
@@ -172,6 +207,9 @@
                     <img src="{% static unit.image %}" alt="{{ unit.name }}">
                     <p>{{ unit.name }}</p>
                     <p> HP: {{unit.hp}}</p>
+                    <div class="tooltip">info
+                        <span class="tooltiptext">{{unit.desc}}</span>
+                    </div>
                     
                 </div>
                     {% else%}
@@ -180,6 +218,9 @@
                         <img src="{% static unit.image %}" alt="{{ unit.name }}">
                     <p>{{ unit.name }}</p>
                     <p> HP: {{unit.hp}}</p>
+                    <div class="tooltip">info
+                        <span class="tooltiptext">{{unit.desc}}</span>
+                    </div>
                 </div>
 
                     {% endif %}
@@ -198,6 +239,9 @@
                                     <img src="{% static unit.image %}" alt="{{ unit.name }}">
                                     <p>{{ unit.name }}</p>
                                     <p> HP: {{unit.hp}}</p>
+                                    <div class="tooltip">info
+                                        <span class="tooltiptext">{{unit.desc}}</span>
+                                    </div>
                                 </div>
                                     
             {% else %}
@@ -205,6 +249,9 @@
                 <img src="{% static unit.image %}" alt="{{ unit.name }}">
             <p>{{ unit.name }}</p>
             <p> HP: {{unit.hp}}</p>
+            <div class="tooltip">info
+                <span class="tooltiptext">{{unit.desc}}</span>
+            </div>
         </div>
             {% endif %}
             {% endfor %}

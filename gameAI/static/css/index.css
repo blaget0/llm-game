@@ -22,6 +22,7 @@
 .unit {
     display: inline-block;
     border: 1px solid #ccc;
+    cursor: pointer;
 }
 
 
@@ -36,3 +37,4 @@
     border: #000;
 
 }
+
