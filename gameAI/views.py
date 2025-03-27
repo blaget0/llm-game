@@ -27,13 +27,15 @@ def index(request):
                                                          'description': unit.desc
                                                         })
 
-            _, damage_info, target = llm.cast_spell(promt, target_context)
-            target_unit = cur_lobby.get_unit_by_name(target)
+            response_text, damage_info, target = llm.cast_spell(promt, target_context)
             selected_unit = cur_lobby.get_unit_by_name(cur_lobby.game_state.selected_unit)
 
-            print('LLM RESPONSE:', damage_info,type(damage_info))
-            for dam in damage_info.values():
-                target_unit.hp -= dam
+            print('LLM RESPONSE:', damage_info,type(damage_info), response_text)
+
+            if damage_info != 'none' and target != 'none':
+                target_unit = cur_lobby.get_unit_by_name(target)
+                for dam in damage_info.values():
+                    target_unit.hp -= dam
 
             if cur_lobby.players[1].is_bot:
                 # This bot attack random units
