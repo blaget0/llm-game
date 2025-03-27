@@ -73,18 +73,24 @@ class Lobby(SerializeableClass):
 
 
 class Unit(SerializeableClass):
-    def __init__(self, name, desc ,hp, attack, id,image='images/DEFAULT.png', abilities=[]):
+    def __init__(self, name, desc, hp, damages, id, image='images/DEFAULT.png', abilities=[], damage_multipliers = {}, damage_resistances = {}):
         self.name = name 
         self.desc = desc
         self.hp = hp 
-        self.attack = attack  
+        self.damages = damages
         self.abilities = abilities
         self.image = image
         self.id = id
+        self.damage_multipliers = damage_multipliers
+        self.damage_resistances = damage_resistances
 
-    def deal_damage(self, other):
+    def deal_damage(self, other, input_damages):
+        total = 0
         crit_chance = 0.15
-        other.hp -= self.attack * ( 2 if randrange(0, 1000)/1000 <= crit_chance else 1)
+        for damage_type, damage_multiplier_type, damage_resistance_type in list(zip(input_damages.keys(), self.damage_multipliers.keys(), other.damage_resistances.keys())):
+            total += input_damages[damage_type] * self.damage_multipliers[damage_multiplier_type] * (1 - other.damage_resistances[damage_resistance_type])
+
+        other.hp -= total * ( 1.5 if randrange(0, 1000)/1000 <= crit_chance else 1)
     
     
     def is_dead(self):

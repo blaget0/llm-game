@@ -5,6 +5,9 @@ from .bots import SimpleBot
 from random import randrange
 from llm_code import llm
 
+default_damages = {"fire_damage": 1, "frost_damage": 1}
+default_damage_resistances = {"fire_damage": 0, "frost_damage": 0}
+default_damage_multipliers = {"fire_damage": 1, "frost_damage": 1}
 
 def index(request):
     
@@ -34,13 +37,14 @@ def index(request):
 
             if damage_info != 'none' and target != 'none':
                 target_unit = cur_lobby.get_unit_by_name(target)
-                for dam in damage_info.values():
-                    target_unit.hp -= dam
+
+                selected_unit.deal_damage(target_unit, damage_info)
 
             if cur_lobby.players[1].is_bot:
                 # This bot attack random units
                 attacked = cur_lobby.players[0].team[randrange(0, 3)]
-                cur_lobby.players[1].team[0].deal_damage(attacked)
+                attacker_index = randrange(0, 3)
+                cur_lobby.players[1].team[attacker_index].deal_damage(attacked, cur_lobby.players[1].team[attacker_index].damages)
 
             game_is_end = cur_lobby.delete_dead_from_field()
             
@@ -86,16 +90,16 @@ def index(request):
     if 'CUR_LOBBY' in request.session:
         del request.session['CUR_LOBBY']
     if 'CUR_LOBBY' not in request.session or 'restart' in request.POST:
-        player1 = Player('Vitya', request.session.session_key, 
+        player1 = Player('Player', request.session.session_key, 
                          [
-                             Unit('knight1','kinda weak knight with cool armor', 5, 1, id=1),
-                             Unit('knight2', 'looks like a barbarian than knight',5, 1, id=2),
-                             Unit('knight3','really strong knight without armor but with big sword' ,5, 1, id=3)  
+                             Unit(name='knight1',desc='kinda weak knight with cool armor', hp=5, damages=default_damages, id=1, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                             Unit(name='knight2',desc='looks like a barbarian than knight', hp=5, damages=default_damages, id=2, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                             Unit(name='knight3',desc='really strong knight without armor but with big sword', hp=5, damages=default_damages, id=3, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances)  
                          ])
         
-        bot = SimpleBot([Unit('goblin1','small goblin with pighead at his head', 5, 1, id=4),
-                         Unit('goblin2','goblin with old knife. He loose his eye a long time ago' ,5, 1, id=5),
-                         Unit('goblin3', 'It is goblin warrior. He is a way bigger than usual goblin' ,5, 1, id=6)])
+        bot = SimpleBot([Unit(name='goblin1',desc='small goblin with pighead at his head', hp=5, damages=default_damages, id=4, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                         Unit(name='goblin2',desc='goblin with old knife. He loose his eye a long time ago', hp=5, damages=default_damages, id=5, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                         Unit(name='goblin3',desc='It is goblin warrior. He is a way bigger than usual goblin', hp=5, damages=default_damages, id=6, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances)])
         
         state = GameState(player1.session_id, bot.session_id)
         state.turn_stage = 'SELECT-UNIT'
