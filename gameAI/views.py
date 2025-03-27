@@ -38,7 +38,7 @@ def index(request):
             if cur_lobby.players[1].is_bot:
                 # This bot attack random units
                 attacked = cur_lobby.players[0].team[randrange(0, 3)]
-                target_unit.deal_damage(attacked)
+                cur_lobby.players[1].team[0].deal_damage(attacked)
 
             game_is_end = cur_lobby.delete_dead_from_field()
             
