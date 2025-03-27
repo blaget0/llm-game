@@ -90,8 +90,9 @@ class Unit(SerializeableClass):
         for damage_type, damage_multiplier_type, damage_resistance_type in list(zip(input_damages.keys(), self.damage_multipliers.keys(), other.damage_resistances.keys())):
             total += input_damages[damage_type] * self.damage_multipliers[damage_multiplier_type] * (1 - other.damage_resistances[damage_resistance_type])
 
-        other.hp -= total * ( 1.5 if randrange(0, 1000)/1000 <= crit_chance else 1)
-    
+        damage_dealt = total * ( 1.5 if randrange(0, 1000)/1000 <= crit_chance else 1)
+        other.hp -= damage_dealt
+        return damage_dealt
     
     def is_dead(self):
         return self.hp <= 0

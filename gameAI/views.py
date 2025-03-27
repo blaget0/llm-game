@@ -15,6 +15,8 @@ def index(request):
 
         print('****************POST_INFO*********\n',request.POST)
 
+        bot_message = 'none'
+        player_message = 'none'
         promt = None 
         cur_lobby = request.session['CUR_LOBBY']
         cur_lobby = Lobby(restore=True, serialized_data=cur_lobby)
@@ -38,13 +40,19 @@ def index(request):
             if damage_info != 'none' and target != 'none':
                 target_unit = cur_lobby.get_unit_by_name(target)
 
-                selected_unit.deal_damage(target_unit, damage_info)
+                player_damage_dealt = selected_unit.deal_damage(target_unit, damage_info)
+                player_message = f'Wizard says: {response_text}. The spell did {player_damage_dealt} damage to {target}'
+            else:
+                player_message = f'Wizard says: {response_text}.'
 
+            
             if cur_lobby.players[1].is_bot:
-                # This bot attack random units
+                # This bot attacks random units
                 attacked = cur_lobby.players[0].team[randrange(0, 3)]
                 attacker_index = randrange(0, 3)
-                cur_lobby.players[1].team[attacker_index].deal_damage(attacked, cur_lobby.players[1].team[attacker_index].damages)
+
+                bot_damage_dealt = cur_lobby.players[1].team[attacker_index].deal_damage(attacked, cur_lobby.players[1].team[attacker_index].damages)
+                bot_message = f"Bot attacked {attacked.name} with {cur_lobby.players[1].team[attacker_index].name} and dealt {bot_damage_dealt} damage."
 
             game_is_end = cur_lobby.delete_dead_from_field()
             
@@ -55,7 +63,8 @@ def index(request):
             request.session['CUR_LOBBY'] = lobby_data
             return JsonResponse({
                 'status': 'success',
-                'message': f'Атакован: {target}. Выберите цель.',
+                'message': player_message,
+                'bot_message': bot_message,
                 'lobby': lobby_data,  # Передаем как объект, а не как строку
                 'game_is_end': game_is_end
 
@@ -80,7 +89,7 @@ def index(request):
             
             return JsonResponse({
                 'status': 'success',
-                'message': f'Выбран юнит: {unit_name}. Выберите цель.',
+                'message': f'Selected unit: {unit_name}.',
                 'lobby': lobby_data,  # Передаем как объект, а не как строку
                 'game_is_end': game_is_end,
                 'promt': promt
