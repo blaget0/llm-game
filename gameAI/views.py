@@ -17,6 +17,9 @@ def index(request):
 
         bot_message = 'none'
         player_message = 'none'
+        damage_info = 'none'
+        heal_info = 'none'
+        target = 'none'
         promt = None 
         cur_lobby = request.session['CUR_LOBBY']
         cur_lobby = Lobby(restore=True, serialized_data=cur_lobby)
@@ -25,27 +28,43 @@ def index(request):
             promt = request.POST.get('promt')
             print('PROMT:', promt)
             target_context = {'possible_targets': []}
-            for i, unit in enumerate(cur_lobby.players[1].team):
+            # можно случайно ударить юнита своей команды
+            for i, unit in enumerate(cur_lobby.players[1].team + cur_lobby.players[0].team):
                 target_context['possible_targets'].append({
                                                          'id': i,
                                                          'name': unit.name,
                                                          'description': unit.desc
                                                         })
-
-            response_text, damage_info, target = llm.cast_spell(promt, target_context)
             selected_unit = cur_lobby.get_unit_by_name(cur_lobby.game_state.selected_unit)
 
-            print('LLM RESPONSE:', damage_info,type(damage_info), response_text)
+            if selected_unit.name == 'wizard':
+                response_text, damage_info, target = llm.cast_spell(promt, target_context)
+                if damage_info != 'none' and target != 'none':
+                    target_unit = cur_lobby.get_unit_by_name(target)
 
-            if damage_info != 'none' and target != 'none':
+                    player_damage_dealt = selected_unit.deal_damage(target_unit, damage_info)
+                    player_message = f'Wizard says: {response_text}. The spell did {player_damage_dealt} damage to {target}'
+                else: 
+                    player_message = f'Wizard says: {response_text}.'
+
+            elif selected_unit.name == 'healer':
+                response_text, heal_info, target = llm.cast_heal(promt, target_context)
+                if heal_info != 'none' and target != 'none':
+                    target_unit = cur_lobby.get_unit_by_name(target)
+
+                    heal = heal_info['heal']
+                    target_unit.hp += heal
+                    player_message = f'Healer says: {response_text}. The spell healed {heal} hp of {target}'
+                else:
+                    player_message = f'Healer says: {response_text}.'
+            else:
+                response_text, target = llm.basic_attack(selected_unit.desc, promt, target_context)
                 target_unit = cur_lobby.get_unit_by_name(target)
 
-                player_damage_dealt = selected_unit.deal_damage(target_unit, damage_info)
-                player_message = f'Wizard says: {response_text}. The spell did {player_damage_dealt} damage to {target}'
-            else:
-                player_message = f'Wizard says: {response_text}.'
+                player_damage_dealt = selected_unit.deal_damage(target_unit, selected_unit.damages)
+                player_message = f'{response_text} {selected_unit.name} did {player_damage_dealt} damage to {target}'
 
-            
+  
             if cur_lobby.players[1].is_bot:
                 # This bot attacks random units
                 attacked = cur_lobby.players[0].team[randrange(0, 3)]
@@ -101,14 +120,14 @@ def index(request):
     if 'CUR_LOBBY' not in request.session or 'restart' in request.POST:
         player1 = Player('Player', request.session.session_key, 
                          [
-                             Unit(name='knight1',desc='kinda weak knight with cool armor', hp=5, damages=default_damages, id=1, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
-                             Unit(name='knight2',desc='looks like a barbarian than knight', hp=5, damages=default_damages, id=2, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
-                             Unit(name='knight3',desc='really strong knight without armor but with big sword', hp=5, damages=default_damages, id=3, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances)  
+                             Unit(name='wizard',desc='A powerful wizard, who can cast spells with magic', hp=5, damages=default_damages, id=1, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                             Unit(name='healer',desc='A healer, who can heal team members and restore their health', hp=5, damages=default_damages, id=2, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                             Unit(name='knight',desc='A really strong knight without armor but with big sword', hp=5, damages=default_damages, id=3, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances)  
                          ])
         
-        bot = SimpleBot([Unit(name='goblin1',desc='small goblin with pighead at his head', hp=5, damages=default_damages, id=4, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
-                         Unit(name='goblin2',desc='goblin with old knife. He loose his eye a long time ago', hp=5, damages=default_damages, id=5, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
-                         Unit(name='goblin3',desc='It is goblin warrior. He is a way bigger than usual goblin', hp=5, damages=default_damages, id=6, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances)])
+        bot = SimpleBot([Unit(name='goblin1',desc='Small goblin with a pighead on his head', hp=5, damages=default_damages, id=4, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                         Unit(name='goblin2',desc='A goblin with an old knife. He lost his eye a long time ago', hp=5, damages=default_damages, id=5, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances),
+                         Unit(name='goblin3',desc='A goblin warrior. He is a way bigger than the usual goblin', hp=5, damages=default_damages, id=6, damage_multipliers=default_damage_multipliers, damage_resistances=default_damage_resistances)])
         
         state = GameState(player1.session_id, bot.session_id)
         state.turn_stage = 'SELECT-UNIT'

@@ -67,6 +67,26 @@ def call_function(name, args, target_context):
         return search_healbook(**args, target_context=target_context)
 
 
+def basic_attack(attacker_description, user_prompt, target_context):
+    target = get_target(user_prompt, target_context)
+
+    system_prompt = f'Describe the attack that the user commands the attacker to do. The description of the attacker: {attacker_description}. Do not describe whether the attack killed or didnt kill the target.'
+    messages = [
+    {"role": "system", "content": system_prompt},
+    {"role": "user", "content": user_prompt},
+    ]
+
+    completion = client.chat.completions.create(
+    model=model_type,
+    messages=messages,
+    temperature=temperature,
+    )
+
+    response = completion.choices[0].message
+
+    return response.content, target
+
+
 def cast_spell(user_prompt, target_context):
     system_prompt = "You are powerful wizard, who obeys the user and casts spells based on what the user tells you."
     messages = [
