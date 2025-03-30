@@ -20,12 +20,15 @@ def index(request):
             promt = request.POST.get('promt')
             print('PROMT:', promt)
             target_context = {'possible_targets': []}
-            for i, unit in enumerate(cur_lobby.players[1].team):
-                target_context['possible_targets'].append({
+            for player in cur_lobby.players:
+                for i, unit in enumerate(player.team):
+                    target_context['possible_targets'].append({
                                                          'id': i,
                                                          'name': unit.name,
                                                          'description': unit.desc
                                                         })
+            
+            
 
             _, damage_info, target = llm.cast_spell(promt, target_context)
             target_unit = cur_lobby.get_unit_by_name(target)

@@ -1,7 +1,10 @@
 from openai import OpenAI
 
 import chromadb
-from llm_code.chroma import get_spell, get_healing_spell
+if __name__ != '__main__':
+    from llm_code.chroma import get_spell, get_healing_spell
+else:
+    from chroma import get_spell, get_healing_spell
 import re
 import os
 from math import ceil
@@ -147,7 +150,7 @@ def cast_heal(user_prompt, target_context):
 
     return final_response.content, heal, target
 
-model_type = "qwen2.5-7b-instruct-1m"
+model_type = "qwen2-0.5b-instruct"
 temperature = 0.7
 client = OpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio")
 
