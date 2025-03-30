@@ -12,6 +12,17 @@
 
     <meta name="csrf-token" content="{{ csrf_token }}">
     <script>
+
+            function logAction(message) {
+                const logEntries = document.getElementById('log-entries');
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.textContent = message;
+                logEntries.appendChild(entry);
+                logEntries.scrollTop = logEntries.scrollHeight;
+            }
+
+
                 function updateEndGameComponent(isGameEnd) {
             const endGameComponent = document.getElementById('end-game-component');
 
@@ -38,10 +49,20 @@
 
             if (response.status === 'success') {
                 // Обновляем сообщение в блоке результата
+
+                /*
                 resultContainer.innerHTML = `<p>${response.message}</p>`;
                 if  (!isNaN(response.promt)) {
                     resultContainer.innerHTML = `<p>${response.promt}</p>`;
                 };
+                */
+
+                if (response.message != 'none') {
+                    logAction(response.message);
+                }
+                if (response.bot_message != 'none') {
+                    logAction(response.bot_message);
+                }
                 
 
                 // Парсим lobby, если это строка
@@ -77,6 +98,9 @@
                             <img src="/static/${unit.image}" alt="${unit.name}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
+                            <div class="tooltip">info
+                                <span class="tooltiptext">${unit.desc}</span>
+                            </div>
                         </div>
                     `).join('')}
                 `;
@@ -89,6 +113,9 @@
                             <img src="/static/${unit.image}" alt="${unit.name}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
+                            <div class="tooltip">info
+                                <span class="tooltiptext">${unit.desc}</span>
+                            </div>
                         </div>
                     `).join('')}
                 `;
@@ -108,6 +135,9 @@
                             <img src="/static/${unit.image}" alt="${unit.name}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
+                            <div class="tooltip">info
+                                <span class="tooltiptext">${unit.desc}</span>
+                            </div>
                         </div>
                     `).join('')}
                 `;
@@ -118,6 +148,9 @@
                 
         
             } 
+            document.addEventListener('DOMContentLoaded', function() {
+                logAction("Game started.");
+            });
 
         // Обработка JSON-ответа от сервера
         document.addEventListener('htmx:afterRequest', function(evt) {
@@ -126,7 +159,7 @@
                     const response = JSON.parse(evt.detail.xhr.responseText);
                     updateGameUI(response); // Обновляем интерфейс
                 } catch (e) {
-                    console.error('Ошибка при обработке ответа:', e);
+                    console.error('Error when proccessing answer:', e);
                 }
             }
         }
@@ -140,6 +173,32 @@
 </head>
 
 <body>
+    <style>
+        .tooltip {
+          position: relative;
+          display: inline-block;
+          border-bottom: 1px dotted black;
+        }
+        
+        .tooltip .tooltiptext {
+          visibility: hidden;
+          width: 120px;
+          background-color: black;
+          color: #fff;
+          text-align: left;
+          border-radius: 6px;
+          padding: 5px 0;
+        
+          /* Position the tooltip */
+          position: absolute;
+          bottom: 13px;
+          z-index: 1;
+        }
+        
+        .tooltip:hover .tooltiptext {
+          visibility: visible;
+        }
+        </style>
     <div id="game">
         <!-- Блок для отображения текущего состояния игры -->
         <div>Сейчас ходит: {{ lobby.players|get_by_index:lobby.game_state.current_turn|get_name }}</div>
@@ -152,7 +211,7 @@
             Вы победили
             <form method="post">
                 {% csrf_token %}
-                <button name="restart", value="restart" "> Начать заново</button>
+                <button name="restart", value="restart"> Начать заново</button>
             </form>
                 
         </div>
@@ -172,6 +231,9 @@
                     <img src="{% static unit.image %}" alt="{{ unit.name }}">
                     <p>{{ unit.name }}</p>
                     <p> HP: {{unit.hp}}</p>
+                    <div class="tooltip">info
+                        <span class="tooltiptext">{{unit.desc}}</span>
+                    </div>
                     
                 </div>
                     {% else%}
@@ -180,6 +242,9 @@
                         <img src="{% static unit.image %}" alt="{{ unit.name }}">
                     <p>{{ unit.name }}</p>
                     <p> HP: {{unit.hp}}</p>
+                    <div class="tooltip">info
+                        <span class="tooltiptext">{{unit.desc}}</span>
+                    </div>
                 </div>
 
                     {% endif %}
@@ -198,6 +263,9 @@
                                     <img src="{% static unit.image %}" alt="{{ unit.name }}">
                                     <p>{{ unit.name }}</p>
                                     <p> HP: {{unit.hp}}</p>
+                                    <div class="tooltip">info
+                                        <span class="tooltiptext">{{unit.desc}}</span>
+                                    </div>
                                 </div>
                                     
             {% else %}
@@ -205,10 +273,41 @@
                 <img src="{% static unit.image %}" alt="{{ unit.name }}">
             <p>{{ unit.name }}</p>
             <p> HP: {{unit.hp}}</p>
+            <div class="tooltip">info
+                <span class="tooltiptext">{{unit.desc}}</span>
+            </div>
         </div>
             {% endif %}
             {% endfor %}
         </div>
     </div>
+
+    <style>
+        .log-container {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 300px;
+            height: 200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            overflow-y: auto;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+    </style>
+    
+    <div class="log-container" id="action-log">
+        <div class="log-header">Action Log</div>
+        <div id="log-entries"></div>
+    </div>
+
 </body>
 </html>

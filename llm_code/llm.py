@@ -70,6 +70,26 @@ def call_function(name, args, target_context):
         return search_healbook(**args, target_context=target_context)
 
 
+def basic_attack(attacker_description, user_prompt, target_context):
+    target = get_target(user_prompt, target_context)
+
+    system_prompt = f'Describe the attack that the user commands the attacker to do. The description of the attacker: {attacker_description}. Do not describe whether the attack killed or didnt kill the target.'
+    messages = [
+    {"role": "system", "content": system_prompt},
+    {"role": "user", "content": user_prompt},
+    ]
+
+    completion = client.chat.completions.create(
+    model=model_type,
+    messages=messages,
+    temperature=temperature,
+    )
+
+    response = completion.choices[0].message
+
+    return response.content, target
+
+
 def cast_spell(user_prompt, target_context):
     system_prompt = "You are powerful wizard, who obeys the user and casts spells based on what the user tells you."
     messages = [
@@ -83,29 +103,33 @@ def cast_spell(user_prompt, target_context):
     tools=wizard_tools,
     temperature=temperature,
     )
+    if completion.choices[0].message.tool_calls is not None:
+        for tool_call in completion.choices[0].message.tool_calls:
+            name = tool_call.function.name
+            args = json.loads(tool_call.function.arguments)
+            messages.append(completion.choices[0].message)
 
-    for tool_call in completion.choices[0].message.tool_calls:
-        name = tool_call.function.name
-        args = json.loads(tool_call.function.arguments)
-        messages.append(completion.choices[0].message)
+            result_prompt, misc_info, target = call_function(name, args, target_context)
 
-        result_prompt, misc_info, target = call_function(name, args, target_context)
+            if name == 'search_spellbook':
+                damage = misc_info.copy()
 
-        if name == 'search_spellbook':
-            damage = misc_info.copy()
+        messages.append(
+            {"role": "tool", "tool_call_id": tool_call.id, "content": json.dumps(result_prompt)}
+        )
 
-    messages.append(
-        {"role": "tool", "tool_call_id": tool_call.id, "content": json.dumps(result_prompt)}
-    )
+        final_completion = client.chat.completions.create(
+        model=model_type,
+        messages=messages,
+        tools=wizard_tools,
+        temperature=temperature,
+        )
+    else:
+        final_completion = completion
+        target = 'none'
+        damage = 'none'
 
-    completion_2 = client.chat.completions.create(
-    model=model_type,
-    messages=messages,
-    tools=wizard_tools,
-    temperature=temperature,
-    )
-
-    final_response = completion_2.choices[0].message
+    final_response = final_completion.choices[0].message
 
     return final_response.content, damage, target
 
@@ -123,30 +147,34 @@ def cast_heal(user_prompt, target_context):
     tools=healer_tools,
     temperature=temperature,
     )
+    if completion.choices[0].message.tool_calls is not None:
+        for tool_call in completion.choices[0].message.tool_calls:
+            name = tool_call.function.name
+            args = json.loads(tool_call.function.arguments)
+            messages.append(completion.choices[0].message)
 
-    for tool_call in completion.choices[0].message.tool_calls:
-        name = tool_call.function.name
-        args = json.loads(tool_call.function.arguments)
-        messages.append(completion.choices[0].message)
 
+            result_prompt, misc_info, target = call_function(name, args, target_context)
 
-        result_prompt, misc_info, target = call_function(name, args, target_context)
+            if name == 'search_healbook':
+                heal = misc_info.copy()
 
-        if name == 'search_healbook':
-            heal = misc_info.copy()
+        messages.append(
+            {"role": "tool", "tool_call_id": tool_call.id, "content": json.dumps(result_prompt)}
+        )
 
-    messages.append(
-        {"role": "tool", "tool_call_id": tool_call.id, "content": json.dumps(result_prompt)}
-    )
+        final_completion = client.chat.completions.create(
+        model=model_type,
+        messages=messages,
+        tools=healer_tools,
+        temperature=temperature,
+        )
+    else:
+        final_completion = completion
+        target = 'none'
+        heal = 'none'
 
-    completion_2 = client.chat.completions.create(
-    model=model_type,
-    messages=messages,
-    tools=healer_tools,
-    temperature=temperature,
-    )
-
-    final_response = completion_2.choices[0].message
+    final_response = final_completion.choices[0].message
 
     return final_response.content, heal, target
 
