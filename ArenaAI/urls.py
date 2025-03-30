@@ -18,8 +18,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from gameAI.views import index
+from draw_app.views import drawer
 
 urlpatterns = [
     path("admin", admin.site.urls),
-    path("", index)
+    path("", index),
+    path("draw", drawer)
 ]

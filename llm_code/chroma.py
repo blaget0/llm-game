@@ -85,7 +85,7 @@ def get_healing_spell(input_text, k_spells):
 
 chroma_client = chromadb.PersistentClient(path="database/")
 
-'''
+
 collection = chroma_client.get_or_create_collection("healing_spells_collection")
 
 collection.add(
@@ -109,4 +109,4 @@ results = battle_collection.query(
     n_results=2
 )
 
-print(results)'''
+print(results)
