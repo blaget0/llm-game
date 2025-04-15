@@ -7,7 +7,7 @@ import shutil
 shutil.rmtree("database", ignore_errors=True)
 
 spell_importance_lookup = ["very weak", "weak", "average", "strong", "very strong"]
-damage_params = ['fire_damage', 'frost_damage', 'damage', 'poison_damage', 'shame_spell']
+damage_params = ['fire_damage', 'frost_damage', 'damage', 'poison_damage', 'shame_spell', 'electric', 'wind', 'sound', 'radiation', 'mana', 'water', 'curse']
 healing_params = ['heal', 'gold']
 
 
@@ -119,42 +119,42 @@ collection.add( # Среднее и Гигантское заклинание х
 spell_collection.add(
     documents=["The fire ball spell casts a circular ball of fire that explodes on contact",
                "The freezing rain spell casts a rain of ice that rains down and freezes anything beneath it"],
-    metadatas=[{"name":"fireball", "fire_damage": "10", "frost_damage": "0", "gold": "10"}, {"name":"freezing_rain", "fire_damage": "0", "frost_damage": "10", "gold": "10"}],
+    metadatas=[{"name":"fireball", "fire_damage": "10", "frost_damage": "0", "mana": "10"}, {"name":"freezing_rain", "fire_damage": "0", "frost_damage": "10", "mana": "10"}],
     ids=["id1", "id2"]
 )
 
 spell_collection.add( # Витя и кислотный дождь
     documents=["The spell summons Vitya Shamonin, who destroys everything in his path",
                "The acid rain spell causes acid rain to fall and corrode everything underneath it"],
-    metadatas=[{"name":"Vitya", "damage": "25", "gold": "30"}, {"name":"acid_rain", "poison_damage": "15", 'gold': '15'}],
+    metadatas=[{"name":"Vitya", "damage": "25", "mana": "30"}, {"name":"acid_rain", "poison_damage": "15", 'mana': '15'}],
     ids=["id3", "id4"]
 )
 
 spell_collection.add( # Кудж и трансформация в сосиску
     documents=["The spell summons Kudzh, who expels you from Mirea",
                "The spell briefly turns you into a sausage and you crawl right between the opponent's buttocks, causing him pain, but also giving him a little joy"],
-    metadatas=[{"name":"Kudzh", "shame_spell": "20", "gold": "22"}, {"name":"sausage_transformation", "damage": "5", 'gold': '5'}],
+    metadatas=[{"name":"Kudzh", "shame_spell": "20", "mana": "22"}, {"name":"sausage_transformation", "damage": "5", 'mana': '5'}],
     ids=["id5", "id6"]
 )
 
 spell_collection.add( # поцелуйчик и звонок Путину
     documents=["You kiss your opponent hard, and as a result of the kiss he becomes infected with gonorrhea",
                "You call Vladimir Vladimirovich Putin on the phone, your opponent has to leave Russia"],
-    metadatas=[{"name":"kiss", "poison_damage": "8", "gold": "8"}, {"name":"Volodya", "damage": "50", 'gold': '70'}],
+    metadatas=[{"name":"kiss", "poison_damage": "8", "mana": "8"}, {"name":"Volodya", "damage": "50", 'mana': '70'}],
     ids=["id7", "id8"]
 )
 
 spell_collection.add( # Феечки Винкс и оживление Ленина
     documents=["You have summoned the Winx fairies, magic spells kill your opponent",
                "You have revived Lenin, the enemy is shaken, long live the new communist revolution"],
-    metadatas=[{"name":"winx", "poison_damage": "20", "damage": "5", "frost_damage": "8", "gold": "40"}, {"name":"Lenin", "shame_spell": "20", 'gold': '23'}],
+    metadatas=[{"name":"winx", "poison_damage": "20", "damage": "5", "frost_damage": "8", "mana": "40"}, {"name":"Lenin", "shame_spell": "20", 'mana': '23'}],
     ids=["id9", "id10"]
 )
 
 spell_collection.add( # Ежик и превращение в Китайца
     documents=["You threw a hedgehog at your opponent, now his whole face is covered in needles",
                "You turn your opponent into a Chinese and start talking about Taiwan"],
-    metadatas=[{"name":"hedgehog", "damage": "5", "gold": "5"}, {"name":"chinese_spell", "shame_spell": "15", 'gold': '15'}],
+    metadatas=[{"name":"hedgehog", "damage": "5", "mana": "5"}, {"name":"chinese_spell", "shame_spell": "15", 'mana': '15'}],
     ids=["id11", "id12"]
 )
 
@@ -191,8 +191,8 @@ spell_collection.add(
         "Earthquake Fist shatters the ground, sending sharp rock fragments in all directions"
     ],
     metadatas=[
-        {"name":"lightning_storm", "damage": "18", "gold": "25"},
-        {"name":"earthquake_fist", "damage": "22", "gold": "28"}
+        {"name":"lightning_storm", "damage": "18", "mana": "25"},
+        {"name":"earthquake_fist", "damage": "22", "mana": "28"}
     ],
     ids=["id13", "id14"]
 )
@@ -204,8 +204,8 @@ spell_collection.add(
         "Mime Prison traps enemy in an invisible box they can't escape for 10 seconds"
     ],
     metadatas=[
-        {"name":"cringe_overload", "shame_spell": "25", "gold": "20"},
-        {"name":"mime_prison", "damage": "8", "gold": "12"}
+        {"name":"cringe_overload", "shame_spell": "25", "mana": "20"},
+        {"name":"mime_prison", "damage": "8", "mana": "12"}
     ],
     ids=["id15", "id16"]
 )
@@ -217,8 +217,8 @@ spell_collection.add(
         "Uno Reverse Card reflects last received damage back to the attacker"
     ],
     metadatas=[
-        {"name":"irs_audit", "shame_spell": "15", "gold": "18"},
-        {"name":"uno_reverse", "damage": "30", "gold": "35"}
+        {"name":"irs_audit", "shame_spell": "15", "mana": "18"},
+        {"name":"uno_reverse", "damage": "30", "mana": "35"}
     ],
     ids=["id17", "id18"]
 )
@@ -230,8 +230,8 @@ spell_collection.add(
         "Quantum Entanglement links two enemies, making them share damage"
     ],
     metadatas=[
-        {"name":"cosmic_meteor", "fire_damage": "18", "poison_damage": "7", "gold": "32"},
-        {"name":"quantum_link", "damage": "25", "shame_spell": "10", "gold": "27"}
+        {"name":"cosmic_meteor", "fire_damage": "18", "poison_damage": "7", "mana": "32"},
+        {"name":"quantum_link", "damage": "25", "shame_spell": "10", "mana": "27"}
     ],
     ids=["id19", "id20"]
 )
@@ -266,8 +266,8 @@ spell_collection.add(
         "Spider-Sense Overload - makes target paranoid about danger from all directions"
     ],
     metadatas=[
-        {"name":"azrael_claw", "damage": "15", "shame_spell": "5", "gold": "20"},
-        {"name":"spider_paranoia", "shame_spell": "25", "gold": "28"}
+        {"name":"azrael_claw", "damage": "15", "shame_spell": "5", "mana": "20"},
+        {"name":"spider_paranoia", "shame_spell": "25", "mana": "28"}
     ],
     ids=["id21", "id22"]
 )
@@ -279,8 +279,8 @@ spell_collection.add(
         "Dumbbell Avalanche - drops 100kg worth of plates on target"
     ],
     metadatas=[
-        {"name":"gym_roar", "damage": "20", "shame_spell": "10", "gold": "24"},
-        {"name":"dumbbell_crash", "damage": "35", "gold": "40"}
+        {"name":"gym_roar", "damage": "20", "shame_spell": "10", "mana": "24"},
+        {"name":"dumbbell_crash", "damage": "35", "mana": "40"}
     ],
     ids=["id23", "id24"]
 )
@@ -291,8 +291,8 @@ spell_collection.add(
         "Rice Paddy Trap - creates sticky mud field slowing movement"
     ],
     metadatas=[
-        {"name":"moto_swarm", "damage": "8", "poison_damage": "7", "gold": "19"},
-        {"name":"paddy_trap", "shame_spell": "15", "gold": "16"}
+        {"name":"moto_swarm", "damage": "8", "poison_damage": "7", "mana": "19"},
+        {"name":"paddy_trap", "shame_spell": "15", "mana": "16"}
     ],
     ids=["id25", "id26"]
 )
@@ -304,8 +304,8 @@ spell_collection.add(
         "Web Swing Fail - sticks enemy to accidentally created concrete wall"
     ],
     metadatas=[
-        {"name":"toxic_berries", "poison_damage": "18", "gold": "25"},
-        {"name":"concrete_web", "damage": "12", "gold": "18"}
+        {"name":"toxic_berries", "poison_damage": "18", "mana": "25"},
+        {"name":"concrete_web", "damage": "12", "mana": "18"}
     ],
     ids=["id27", "id28"]
 )
@@ -316,8 +316,8 @@ collection.add(
         "Dean's Golden Handshake - instantly reinstates student status at enormous gold cost"
     ],
     metadatas=[
-        {"name":"academic_mirage", "heal": "15", "gold": "10"},
-        {"name":"deans_bribe", "heal": "30", "gold": "50"}
+        {"name":"academic_mirage", "heal": "15", "mana": "10"},
+        {"name":"deans_bribe", "heal": "30", "mana": "50"}
     ],
     ids=["id13", "id14"]
 )
@@ -340,8 +340,8 @@ spell_collection.add(
         "Student Debt Swarm - endless payment demands circling target like angry bees"
     ],
     metadatas=[
-        {"name":"expulsion_notice", "shame_spell": "28", "damage": "12", "gold": "32"},
-        {"name":"debt_swarm", "poison_damage": "6", "gold": "20"}
+        {"name":"expulsion_notice", "shame_spell": "28", "damage": "12", "mana": "32"},
+        {"name":"debt_swarm", "poison_damage": "6", "mana": "20"}
     ],
     ids=["id29", "id30"]
 )
@@ -352,8 +352,8 @@ spell_collection.add(
         "Plagiarism Tornado - whirlwind of mismatched citations and broken bibliography"
     ],
     metadatas=[
-        {"name":"draft_papers", "damage": "42", "gold": "48"},
-        {"name":"citation_storm", "shame_spell": "38", "gold": "30"}
+        {"name":"draft_papers", "damage": "42", "mana": "48"},
+        {"name":"citation_storm", "shame_spell": "38", "mana": "30"}
     ],
     ids=["id31", "id32"]
 )
@@ -364,8 +364,8 @@ spell_collection.add(
         "Gas Mask Drill - military-style PT session in toxic environment"
     ],
     metadatas=[
-        {"name":"ppt_marathon", "poison_damage": "4", "shame_spell": "12", "gold": "17"},
-        {"name":"gas_mask_pt", "damage": "20", "gold": "24"}
+        {"name":"ppt_marathon", "poison_damage": "4", "shame_spell": "12", "mana": "17"},
+        {"name":"gas_mask_pt", "damage": "20", "mana": "24"}
     ],
     ids=["id33", "id34"]
 )
@@ -376,8 +376,8 @@ spell_collection.add(
         "Peer Review Paradox - trap that infinitely generates 'revise and resubmit' requests"
     ],
     metadatas=[
-        {"name":"loan_curse", "gold_drain": "1", "damage": "8", "gold_cost": "12"},
-        {"name":"peer_review", "shame_spell": "45", "gold": "38"}
+        {"name":"loan_curse", "gold_drain": "1", "damage": "8", "mana": "12"},
+        {"name":"peer_review", "shame_spell": "45", "mana": "38"}
     ],
     ids=["id35", "id36"]
 )
@@ -388,14 +388,87 @@ spell_collection.add(
         "Tuition Fee Meteor - colossal golden coin crushing enemies under educational debt"
     ],
     metadatas=[
-        {"name":"drill_ghost", "shame_spell": "30", "damage": "15", "gold": "35"},
-        {"name":"tuition_meteor", "damage": "55", "gold": "60"}
+        {"name":"drill_ghost", "shame_spell": "30", "damage": "15", "mana": "35"},
+        {"name":"tuition_meteor", "damage": "55", "mana": "60"}
     ],
     ids=["id37", "id38"]
 )
 
+spell_collection.add(
+    documents=[
+        "Blow the Enemy Away with Wind - Throws the enemy away with wind, dealing damage to them",
+        "Launch a tactical nuclear charge - a nuclear missile flies at the enemy"
+    ],
+    metadatas=[
+        {"name":"wind_attack", "wind": "15", "damage": "2", "mana": "15"},
+        {"name":"nuclear_bomb", "radiation": "40", "damage": "50", "mana": "100"}
+    ],
+    ids=["id39", "id40"]
+)
+
+spell_collection.add(
+    documents=[
+        "Summon Lightning - Strikes the enemy with lightning",
+        "Break the Sound Barrier - Stuns the enemy"
+    ],
+    metadatas=[
+        {"name":"lightning", "electric": "30", "mana": "35"},
+        {"name":"sound_attack", "sound": "15", "mana": "20"}
+    ],
+    ids=["id41", "id42"]
+)
+
+spell_collection.add(
+    documents=[
+        "Insult your opponent's mother - say bad things about your opponent's family",
+        "Cast an Electric Ball - Throw an electric ball and throw it at your opponent"
+    ],
+    metadatas=[
+        {"name":"insult", "shame_spell": "5", "mana": "3"},
+        {"name":"elecric_ball", "electric": "15", 'damage': '5', "mana": "22"}
+    ],
+    ids=["id43", "id44"]
+)
+
+spell_collection.add(
+    documents=[
+        "Incinerate the enemy - Covers your enemy's body in flames for a short time",
+        "Throw the enemy up - throws the enemy up and slams him into the ground"
+    ],
+    metadatas=[
+        {"name":"incinerate", "fire_damage": "30", "mana": "35"},
+        {"name":"throw_up", "wind": "5", 'damage': '5', "mana": "12"}
+    ],
+    ids=["id45", "id46"]
+)
+
+spell_collection.add(
+    documents=[
+        "Entangles the target in black energy threads that slowly absorb life force, causing pain, numbness and temporary paralysis",
+        "Creates a clot of water compressed to incredible pressure, which is released like an arrow It penetrates light armor and throws the enemy back"
+    ],
+    metadatas=[
+        {"name":"Tenebrosus Vitium", "curse": "20", "mana": "25"},
+        {"name":"Aqua Sagitta", "water": "10", 'damage': '20', "mana": "35"}
+    ],
+    ids=["id47", "id48"]
+)
+
+spell_collection.add(
+    documents=[
+        "Instills an intrusive whisper into the victim's mind, reducing concentration and causing panic.",
+        "Creates a powerful whirlpool that pulls enemies into the radius, dealing impact damage and knocking them down."
+    ],
+    metadatas=[
+        {"name":"Whispers of the Gray Abyss", "curse": "15", "mana": "15"},
+        {"name":"Vortex of Abyss", "water": "15", 'damage': '5', "mana": "27"}
+    ],
+    ids=["id49", "id50"]
+)
+
+
 results = spell_collection.query(
-    query_texts=["Show Powerpoint"],
+    query_texts=["Throw up"],
     n_results=12
 )
 
