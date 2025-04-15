@@ -7,7 +7,7 @@ import shutil
 shutil.rmtree("database", ignore_errors=True)
 
 spell_importance_lookup = ["very weak", "weak", "average", "strong", "very strong"]
-damage_params = ['fire_damage', 'frost_damage', 'damage', 'poison_damage', 'shame_spell', 'electric', 'wind', 'sound', 'radiation', 'mana']
+damage_params = ['fire_damage', 'frost_damage', 'damage', 'poison_damage', 'shame_spell', 'electric', 'wind', 'sound', 'radiation', 'mana', 'water', 'curse']
 healing_params = ['heal', 'gold']
 
 
@@ -432,7 +432,7 @@ spell_collection.add(
 
 spell_collection.add(
     documents=[
-        "Incinerate the enemy - Covers your enemy's body in flames for a short time.",
+        "Incinerate the enemy - Covers your enemy's body in flames for a short time",
         "Throw the enemy up - throws the enemy up and slams him into the ground"
     ],
     metadatas=[
@@ -440,6 +440,30 @@ spell_collection.add(
         {"name":"throw_up", "wind": "5", 'damage': '5', "mana": "12"}
     ],
     ids=["id45", "id46"]
+)
+
+spell_collection.add(
+    documents=[
+        "Entangles the target in black energy threads that slowly absorb life force, causing pain, numbness and temporary paralysis",
+        "Creates a clot of water compressed to incredible pressure, which is released like an arrow It penetrates light armor and throws the enemy back"
+    ],
+    metadatas=[
+        {"name":"Tenebrosus Vitium", "curse": "20", "mana": "25"},
+        {"name":"Aqua Sagitta", "water": "10", 'damage': '20', "mana": "35"}
+    ],
+    ids=["id47", "id48"]
+)
+
+spell_collection.add(
+    documents=[
+        "Instills an intrusive whisper into the victim's mind, reducing concentration and causing panic.",
+        "Creates a powerful whirlpool that pulls enemies into the radius, dealing impact damage and knocking them down."
+    ],
+    metadatas=[
+        {"name":"Whispers of the Gray Abyss", "curse": "15", "mana": "15"},
+        {"name":"Vortex of Abyss", "water": "15", 'damage': '5', "mana": "27"}
+    ],
+    ids=["id49", "id50"]
 )
 
 
