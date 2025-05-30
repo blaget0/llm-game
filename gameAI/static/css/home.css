@@ -1,0 +1,58 @@
+@font-face {
+    font-family: 'Code-Font';
+    src: local('CodeFont') ,
+                url('../fonts/PressStart2P-Regular.ttf') format("truetype");
+                }
+
+
+.body-class {
+    background-color: #000;
+}
+.game_menu {
+    position: fixed;
+    left: 30vw;
+    top: 35vh;
+    width: 40vw;
+    height: 30vh;
+    background-color: #000;
+    border:3px solid rgb(255, 255, 255);
+    font-family: 'Code-Font'
+}
+
+.submit_btn {
+    background-color: transparent;
+    top: -1000px
+}
+
+.game_menu form {
+    display: flex;           /* Включаем Flexbox */
+    justify-content: center; /* Центрируем по горизонтали */
+    align-items: center;     /* Центрируем по вертикали */
+    height: 100%;            /* Занимает всю высоту game_menu */
+}
+
+.submit_div {
+    width: 60%;
+    height: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    color: white;
+    border: 3px solid rgb(255, 255, 255);
+    font-size: 20pt;
+    font-family: 'Code-Font', monospace; /* fallback на monospace */
+    cursor: pointer;         /* Курсор-указатель */
+    user-select: none;      /* Запрещаем выделение текста */
+    transition: 0.2s;       /* Плавные hover-эффекты */
+}
+
+/* Эффект при наведении */
+.submit_div:hover {
+    background-color: #ddd;
+}
+
+/* Эффект при нажатии */
+.submit_div:active {
+    transform: scale(0.98);
+}

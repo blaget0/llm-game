@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/css/drawer.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> DRAW YOUR TEAM !!! </title>
+   
+</head>
+<body style="background-color: black;">
+    <h1>DRAW YOUR TEAM !!!</h1>
+    <div class="tabs">
+        <div class="tab active" data-tab="1"> Wizard </div>
+        <div class="tab" data-tab="2"> Healer </div>
+        <div class="tab" data-tab="3"> Knight </div>
+    </div>
+    <canvas id="drawingCanvas" width="600" height="400"></canvas>
+    <div>
+        <button id="saveBtn">Save Drawings</button>
+        
+        <button onclick="location.href = '/game'">Start Game</button>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let currentTab = 1;
+        
+        // Store drawings for each tab
+        const drawings = {
+            1: null,
+            2: null,
+            3: null
+        };
+
+        // Initialize drawings
+        function initDrawings() {
+            for (let i = 1; i <= 3; i++) {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.fillStyle = 'white';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                drawings[i] = tempCanvas;
+            }
+            updateCanvas();
+        }
+
+        // Update canvas based on current tab
+        function updateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(drawings[currentTab], 0, 0);
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = parseInt(tab.dataset.tab);
+                updateCanvas();
+            });
+        });
+
+        // Drawing logic
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'black';
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.beginPath();
+            
+            // Save current drawing to the active tab
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(canvas, 0, 0);
+            drawings[currentTab] = tempCanvas;
+        }
+
+        // Save button
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const folderName = `drawings_${Date.now()}`;
+            
+            // Create FormData and send all images at once
+            const formData = new FormData();
+            formData.append('folder_name', folderName);
+
+            for (let i = 1; i <= 3; i++) {
+                const dataURL = drawings[i].toDataURL('image/png');
+                const blob = await fetch(dataURL).then(res => res.blob());
+                formData.append(`unit${i}`, blob, `unit${i}.png`);
+            }
+            
+            try {
+                const response = await fetch('/save_drawing/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),  // CSRF token
+                    },
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Drawings saved in folder: ${result.folder_path}`);
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving drawings! Check console.');
+            }
+        });
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Initialize
+        initDrawings();
+    </script>
+</body>
+</html>

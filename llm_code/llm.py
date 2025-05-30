@@ -179,7 +179,7 @@ def cast_heal(user_prompt, target_context):
     return final_response.content, heal, target
 
 model_type = "qwen2-0.5b-instruct"
-temperature = 0.7
+temperature = 0.5
 client = OpenAI(base_url="http://127.0.0.1:1234/v1", api_key="lm-studio")
 
 wizard_tools = [

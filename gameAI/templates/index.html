@@ -67,20 +67,21 @@
 
                 // Парсим lobby, если это строка
                 const lobby = typeof response.lobby === 'string' ? JSON.parse(response.lobby) : response.lobby;
-
+                const MEDIA_URL = response.MEDIA_URL;;
+                
                 // Обновляем текущего игрока
                 const currentPlayer = lobby.players[lobby.game_state.current_turn];
                 const gameIsEnd = response.game_is_end
 
                 updateEndGameComponent(gameIsEnd)
 
-                gameContainer.querySelector('div:first-child').innerText = `Сейчас ходит: ${currentPlayer.name}`;
+                gameContainer.querySelector('div:first-child').innerText = `Волн пройдено: ${lobby.wave}`;
 
                 // Определяем turnStage
                
                 turnStage = lobby.game_state.turn_stage; 
 
-                console.log(turnStage)
+                console.log(MEDIA_URL)
 
                 // Обновляем этап хода
                 gameContainer.querySelector('.enemy_team div:first-child').innerText = `ИГРОК: ${lobby.players[1].name} (Этап хода: ${turnStage})`;
@@ -94,8 +95,8 @@
                     <div>ИГРОК: ${lobby.players[0].name}</div>
                     
                     ${lobby.players[0].team.map(unit => `
-                        <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"unit_name": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
-                            <img src="/static/${unit.image}" alt="${unit.name}">
+                        <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/game" hx-vals='{"unit_name": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                            <img src="${MEDIA_URL}drawings/${unit.image }" alt="{% static  'images/DEFAULT.png' %}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
                             <div class="tooltip">info
@@ -110,7 +111,7 @@
                     ${lobby.players[1].team.map(unit => `
                         <div class="unit">
 
-                            <img src="/static/${unit.image}" alt="${unit.name}">
+                            <img src="{% static 'images/DEFAULT.png' %}" alt="{% static 'images/DEFAULT.png' %}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
                             <div class="tooltip">info
@@ -123,7 +124,7 @@
 
                 else {
                     userTeamContainer.innerHTML = `
-                    <form hx-post="/"  id="promt-form"> 
+                    <form hx-post="/game"  id="promt-form"> 
                         {% csrf_token %}
                         <textarea name="promt"></textarea>
                         <button type="submit"> Отправить </button>
@@ -131,8 +132,8 @@
 
                     <div>ИГРОК: ${lobby.players[0].name}</div>
                     ${lobby.players[0].team.map(unit => `
-                        <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"unit_name": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
-                            <img src="/static/${unit.image}" alt="${unit.name}">
+                        <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/game" hx-vals='{"unit_name": "${unit.name}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                            <img src="${MEDIA_URL}drawings/${unit.image }" alt="{% static  'images/DEFAULT.png' %}">
                             <p>${unit.name}</p>
                             <p>HP: ${unit.hp}</p>
                             <div class="tooltip">info
@@ -156,6 +157,7 @@
         document.addEventListener('htmx:afterRequest', function(evt) {
             if (evt.detail.successful) {
                 try {
+                    console.log(evt.detail.xhr.responseText)
                     const response = JSON.parse(evt.detail.xhr.responseText);
                     updateGameUI(response); // Обновляем интерфейс
                 } catch (e) {
@@ -172,7 +174,7 @@
     </script>
 </head>
 
-<body>
+<body style="background-color: #000; color: white;">
     <style>
         .tooltip {
           position: relative;
@@ -199,17 +201,17 @@
           visibility: visible;
         }
         </style>
-    <div id="game">
+    <div id="game" style="background-color: black; color:white;">
         <!-- Блок для отображения текущего состояния игры -->
-        <div>Сейчас ходит: {{ lobby.players|get_by_index:lobby.game_state.current_turn|get_name }}</div>
+        <div>Волн пройдено: {{lobby.wave}}</div>
         <div id="result"></div>
         <div id="prompt"> </div>
 
 
 
-        <div class="restart_screen" id='end-game-component'>
+        <div class="restart_screen" id='end-game-component' style="display: none;">
             Вы победили
-            <form method="post">
+            <form  action = "/game" method="post">
                 {% csrf_token %}
                 <button name="restart", value="restart"> Начать заново</button>
             </form>
@@ -219,7 +221,7 @@
 
         <!-- Команда игрока -->
         <div class="user_team">
-            <form hx-post='/' id="promt-form"> 
+            <form hx-post="/game" id="promt-form"> 
                 {% csrf_token %}
                 <textarea name="promt"></textarea>
                 <button type="submit"> Отправить </button>
@@ -227,8 +229,8 @@
             <div>ИГРОК: {{ lobby.players.0.name }} {{lobby.game_state.turn_stage}}</div>
             {% for unit in lobby.players.0.team %}
                     {% if lobby.game_state.turn_stage == 'SELECT-UNIT' %}
-                <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"unit_name": "{{ unit.name }}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
-                    <img src="{% static unit.image %}" alt="{{ unit.name }}">
+                <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/game" hx-vals='{"unit_name": "{{ unit.name }}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                    <img src="{{ MEDIA_URL }}drawings/{{ unit.image }}" alt="{% static  'images/DEFAULT.png' %}">
                     <p>{{ unit.name }}</p>
                     <p> HP: {{unit.hp}}</p>
                     <div class="tooltip">info
@@ -239,7 +241,7 @@
                     {% else%}
                     
                     <div class="unit">
-                        <img src="{% static unit.image %}" alt="{{ unit.name }}">
+                        <img src="{{ unit.image }}" alt="{% static  'images/DEFAULT.png' %}">
                     <p>{{ unit.name }}</p>
                     <p> HP: {{unit.hp}}</p>
                     <div class="tooltip">info
@@ -259,8 +261,8 @@
             {% for unit in lobby.players.1.team %}
             {% if lobby.game_state.turn_stage == 'ACTION' %}
                                 
-                                <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/" hx-vals='{"target": "{{ unit.name }}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
-                                    <img src="{% static unit.image %}" alt="{{ unit.name }}">
+                                <div class="unit" hx-headers='{"Cache-Control": "no-cache"}' hx-post="/game" hx-vals='{"target": "{{ unit.name }}", "csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                                    <img src="{% static  'images/DEFAULT.png' %}"" alt="{% static  'images/DEFAULT.png' %}">
                                     <p>{{ unit.name }}</p>
                                     <p> HP: {{unit.hp}}</p>
                                     <div class="tooltip">info
@@ -270,7 +272,7 @@
                                     
             {% else %}
             <div class="unit">
-                <img src="{% static unit.image %}" alt="{{ unit.name }}">
+                <img src="{% static  'images/DEFAULT.png' %}"" alt="{% static  'images/DEFAULT.png' %}">
             <p>{{ unit.name }}</p>
             <p> HP: {{unit.hp}}</p>
             <div class="tooltip">info

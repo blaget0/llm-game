@@ -109,4 +109,3 @@ results = battle_collection.query(
     n_results=2
 )
 
-print(results)

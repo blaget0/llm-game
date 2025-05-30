@@ -1,0 +1,55 @@
+@font-face {
+    font-family: 'Code-Font';
+    src: local('Code-Font') , url('/static/fonts/PressStart2P-Regular.ttf') format("truetype");
+}
+
+body {
+    margin: 20px;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Code-Font', sans-serif;
+}
+
+/* Особые стили для элементов форм */
+input, textarea, button, select {
+    font-family: 'Code-Font', sans-serif;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.tab {
+    padding: 10px 20px;
+    background: #000000;
+    cursor: pointer;
+    border: 1px solid #ffffff;
+    margin-right: 5px;
+    color: #ffffff;
+}
+
+.tab.active {
+    background: #ffffff;
+    border: 1px solid #ffffff;
+    color: #000000;
+}
+
+canvas {
+    border: 1px solid #000;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    background: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #000000;
+    color: #fff;
+    border: 1px solid #ffffff;
+}

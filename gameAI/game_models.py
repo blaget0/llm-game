@@ -40,17 +40,21 @@ class Player(SerializeableClass):
     
 
 class Lobby(SerializeableClass):
-    def __init__(self, *players, game_state=None, restore=False, serialized_data=None):
+    def __init__(self, *players, id=None,game_state=None, restore=False, serialized_data=None, wave=None):
+        self.wave = 0
         if restore:
             self.players = []
             data = json.loads(serialized_data)
+            self.id = data['id']
             for player in data['players']:
                 print(player['team'])
                 self.players.append(Player(name=player['name'], session_id=player['session_id'], 
                                            team=[Unit(**unit) for unit in player['team']], is_bot=player['is_bot']))
 
             self.game_state = GameState(restore=True, serialized_data=data['game_state'])
-        else:    
+            self.wave = data['wave']
+        else:
+            self.id = id    
             self.players = list(players)
             self.game_state = game_state
 
@@ -61,14 +65,18 @@ class Lobby(SerializeableClass):
         for player in self.players:
             units += player.team
         for unit in units:
-            if unit.name == name:
+            if unit.name.lower() == name.lower():
                 return unit
     
     def delete_dead_from_field(self):
         for player in self.players:
             player.delete_dead_units()
         
-        return len(self.players) == 0
+        
+        if len(self.players[0].team) == 0:
+            return True
+        
+        return False
 
 
 
